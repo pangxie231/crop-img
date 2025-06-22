@@ -1,0 +1,2 @@
+Pillow==11.2.1
+psd_tools==1.10.8
