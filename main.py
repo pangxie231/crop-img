@@ -3,6 +3,7 @@ import tkinter as tk
 
 def main():
   root = tk.Tk()
+  root.geometry('800x640')
   app = App(root)
   root.mainloop()
 
