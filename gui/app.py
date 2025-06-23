@@ -8,6 +8,7 @@ class App:
     self.root = root
 
     self.image_cache = {}
+    self.pil_image = {}
     
     main_frame = Frame(root, width=800, height=600)
     main_frame.pack(fill=BOTH, expand=True)
@@ -25,8 +26,16 @@ class App:
   def frame_left(self, main):
     frame = tk.Frame(main, width=400, height=600, bg='yellow')
     frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    self.left_frame = frame
     self.psd_preview = tk.Canvas(frame, cursor='cross')
     self.psd_preview.pack(fill=tk.BOTH, expand=True)
+    
+    vbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=self.psd_preview.yview)
+    vbar.pack(side=tk.RIGHT, fill=Y)
+    hbar = tk.Scrollbar(frame, orient=tk.HORIZONTAL, command=self.psd_preview.xview)
+    hbar.pack(side=tk.BOTTOM, fill=X)
+    
+    self.psd_preview.configure(yscrollcommand=vbar.set, xscrollcommand=hbar.set)
 
     # 选区功能
     self.init_crop_reactangle()
@@ -35,12 +44,25 @@ class App:
     self.start_x = None
     self.start_y = None
     self.start_id = None
+    
+    self.rect_id = None
+    self.buttons_frame_id = None
 
     self.psd_preview.bind("<ButtonPress-1>", self.on_press)
     self.psd_preview.bind("<B1-Motion>", self.on_drag)
+    self.psd_preview.bind('<ButtonRelease-1>', self.on_release)
+    
 
 
   def on_press(self, event):
+    if self.rect_id:
+      self.psd_preview.delete(self.rect_id)
+      self.rect_id = None
+    if self.buttons_frame_id:
+      self.psd_preview.delete(self.buttons_frame_id)
+      self.buttons_frame_id = None
+    
+    
     self.start_x = event.x
     self.start_y = event.y
 
@@ -48,9 +70,47 @@ class App:
   def on_drag(self, event):
     self.psd_preview.coords(self.rect_id, self.start_x, self.start_y, event.x, event.y)
   
-  # def on_release(self, event):
+  def on_release(self, event):
+    x1, y1 = self.start_x, self.start_y
+    x2, y2 = event.x, event.y
+    x1, x2 = sorted([x1, x2])
+    y1, y2 = sorted([y1, y2])
+    
+    self.create_buttons(x2, y2)
+  def create_buttons(self, x, y):
 
+    frame = tk.Frame(self.root)
+    
+    ok_btn = tk.Button(frame, text='确定', command=self.ok_crop)
+    ok_btn.pack(side=tk.LEFT)
 
+    cancel_btn = tk.Button(frame, text='取消', padx=5, command=self.cancel_crop)
+    cancel_btn.pack(side=tk.LEFT, padx=5)
+
+    frame.update_idletasks()
+    frame_width = frame.winfo_reqwidth()
+    self.buttons_frame_id = self.psd_preview.create_window(x - frame_width - 8, y + 8, anchor=tk.NW, window=frame)
+
+  def ok_crop(self):
+    if not self.rect_id:
+      return
+    
+    x1, y1, x2, y2 = map(int, self.psd_preview.coords(self.rect_id))
+
+    cropped_img = self.pil_image['full'].crop((x1, y1, x2, y2))
+    tk_img = ImageTk.PhotoImage(cropped_img)
+    self.image_cache[self.rect_id] = tk_img
+    tk.Label(self.previews_frame, image=tk_img).pack(side=tk.LEFT)
+    
+    
+  
+  def cancel_crop(self):
+    if self.rect_id:
+      self.psd_preview.delete(self.rect_id)
+      self.rect_id = None
+    if self.buttons_frame_id:
+      self.psd_preview.delete(self.buttons_frame_id)
+      self.buttons_frame_id = None
 
   # 右侧 
   def frame_right(self, main):
@@ -62,6 +122,7 @@ class App:
   # 右上
   def frame_rt(self, parent):
     frame = tk.Frame(parent, bg='purple')
+    self.previews_frame = frame
     frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
   # 右下
@@ -78,7 +139,8 @@ class App:
     if file_path:
       self.psd = PSDImage.open(file_path)
       full_image = self.psd.composite()
-      full_image.thumbnail((600, 600))
+      # full_image.thumbnail((600, 600))
+      self.pil_image['full'] = full_image
       tk_image = ImageTk.PhotoImage(full_image)
       self.psd_preview.create_image(0,0, anchor=tk.NW, image=tk_image)
       self.image_cache['full'] = tk_image  # 必须缓存
