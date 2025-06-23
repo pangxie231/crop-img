@@ -24,18 +24,23 @@ class App:
 
   # 左边设计稿展示
   def frame_left(self, main):
-    frame = tk.Frame(main, width=400, height=600, bg='yellow')
+    frame = tk.Frame(main, bg='yellow')
     frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     self.left_frame = frame
-    self.psd_preview = tk.Canvas(frame, cursor='cross')
-    self.psd_preview.pack(fill=tk.BOTH, expand=True)
+
     
-    vbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=self.psd_preview.yview)
+    vbar = tk.Scrollbar(frame, orient=tk.VERTICAL)
     vbar.pack(side=tk.RIGHT, fill=Y)
-    hbar = tk.Scrollbar(frame, orient=tk.HORIZONTAL, command=self.psd_preview.xview)
+    hbar = tk.Scrollbar(frame, orient=tk.HORIZONTAL)
     hbar.pack(side=tk.BOTTOM, fill=X)
+
+    self.psd_preview = tk.Canvas(frame, cursor='cross')
+    self.psd_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    vbar.config(command=self.psd_preview.yview)
+    hbar.config(command=self.psd_preview.xview)
     
-    self.psd_preview.configure(yscrollcommand=vbar.set, xscrollcommand=hbar.set)
+
+    self.psd_preview.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 
     # 选区功能
     self.init_crop_reactangle()
@@ -86,7 +91,7 @@ class App:
 
     cancel_btn = tk.Button(frame, text='取消', padx=5, command=self.cancel_crop)
     cancel_btn.pack(side=tk.LEFT, padx=5)
-
+ 
     frame.update_idletasks()
     frame_width = frame.winfo_reqwidth()
     self.buttons_frame_id = self.psd_preview.create_window(x - frame_width - 8, y + 8, anchor=tk.NW, window=frame)
@@ -143,6 +148,7 @@ class App:
       self.pil_image['full'] = full_image
       tk_image = ImageTk.PhotoImage(full_image)
       self.psd_preview.create_image(0,0, anchor=tk.NW, image=tk_image)
+      self.psd_preview.config(scrollregion=self.psd_preview.bbox('all'))
       self.image_cache['full'] = tk_image  # 必须缓存
 
 
