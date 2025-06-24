@@ -1,4 +1,5 @@
 import tkinter as tk
+from functools import cmp_to_key
 
 # def main():
 #   root = tk.Tk()
@@ -32,32 +33,46 @@ import tkinter as tk
 
 
 # 滚动条
-root = tk.Tk()
-root.title('滚动条学习')
-root.geometry('400x180')
+# root = tk.Tk()
+# root.title('滚动条学习')
+# root.geometry('400x180')
 
-frame1 = tk.Frame(root, width=200)
-frame1.pack(side=tk.LEFT, fill=tk.BOTH)
+# frame1 = tk.Frame(root, width=200)
+# frame1.pack(side=tk.LEFT, fill=tk.BOTH)
 
-sbarx = tk.Scrollbar(frame1, orient=tk.HORIZONTAL)
-sbarx.pack(side=tk.BOTTOM, fill=tk.X)
+# sbarx = tk.Scrollbar(frame1, orient=tk.HORIZONTAL)
+# sbarx.pack(side=tk.BOTTOM, fill=tk.X)
 
-sbary = tk.Scrollbar(frame1)
-sbary.pack(side=tk.RIGHT, fill=tk.Y)
+# sbary = tk.Scrollbar(frame1)
+# sbary.pack(side=tk.RIGHT, fill=tk.Y)
 
 
-canvas = tk.Canvas(frame1, xscrollcommand= sbarx.set, yscrollcommand=sbary.set)
-canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-canvas.create_rectangle(40, 20, 240, 222, fill='green')
-canvas.create_rectangle(80, 300, 280, 500, fill='blue')
-canvas.create_rectangle(60, 60, 1000, 580, fill='pink')
+# canvas = tk.Canvas(frame1, xscrollcommand= sbarx.set, yscrollcommand=sbary.set)
+# canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+# canvas.create_rectangle(40, 20, 240, 222, fill='green')
+# canvas.create_rectangle(80, 300, 280, 500, fill='blue')
+# canvas.create_rectangle(60, 60, 1000, 580, fill='pink')
 
-sbarx.config(command=canvas.xview)
-sbary.config(command=canvas.yview)
+# sbarx.config(command=canvas.xview)
+# sbary.config(command=canvas.yview)
 
-canvas.config(scrollregion=canvas.bbox('all'))
+# canvas.config(scrollregion=canvas.bbox('all'))
 
-frame2 = tk.Frame(root, width=200)
-frame2.pack(side=tk.LEFT, fill=tk.BOTH)
+# frame2 = tk.Frame(root, width=200)
+# frame2.pack(side=tk.LEFT, fill=tk.BOTH)
 
-root.mainloop()
+# root.mainloop()
+
+x = [2,3,5,4,1]
+# 先判断x > y
+# -1 1, 按照一个坐标轴，-1在左侧，1在右侧
+def compare(x,y):
+  if x > y:
+    return -1
+  if x < y:
+    return 1
+  else:
+    return 0
+  
+x.sort(key=cmp_to_key(compare))
+print(x)

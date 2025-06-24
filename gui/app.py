@@ -34,6 +34,8 @@ class App:
     hbar = tk.Scrollbar(frame, orient=tk.HORIZONTAL)
     hbar.pack(side=tk.BOTTOM, fill=X)
 
+    vbar.get()
+
     self.psd_preview = tk.Canvas(frame, cursor='cross')
     self.psd_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     vbar.config(command=self.psd_preview.yview)
@@ -58,6 +60,20 @@ class App:
     self.psd_preview.bind('<ButtonRelease-1>', self.on_release)
     
 
+  # 纠正偏移量
+  def adjust_coords(self, *args):
+    dx = self.psd_preview.canvasx(0)
+    dy = self.psd_preview.canvasy(0)
+
+    if len(args) == 2:
+      x, y= args
+      return x + dx, y+dy
+    elif len(args) == 4:
+      x1, y1, x2, y2 = args
+      return x1 + dx, y1 + dy, x2 + dx, y2 + dy
+    else:
+      raise ValueError('必须传入两个或四个坐标')
+      
 
   def on_press(self, event):
     if self.rect_id:
@@ -68,14 +84,17 @@ class App:
       self.buttons_frame_id = None
     
     
+    # 鼠标的位置
     self.start_x = event.x
     self.start_y = event.y
 
-    self.rect_id = self.psd_preview.create_rectangle(self.start_x, self.start_y, self.start_x, self.start_y, outline='red', width=2)
+    self.rect_id = self.psd_preview.create_rectangle(*self.adjust_coords(self.start_x, self.start_y, self.start_x, self.start_y), outline='red', width=2)
   def on_drag(self, event):
-    self.psd_preview.coords(self.rect_id, self.start_x, self.start_y, event.x, event.y)
+    
+    self.psd_preview.coords(self.rect_id, *self.adjust_coords(self.start_x, self.start_y, event.x, event.y))
   
   def on_release(self, event):
+
     x1, y1 = self.start_x, self.start_y
     x2, y2 = event.x, event.y
     x1, x2 = sorted([x1, x2])
@@ -91,10 +110,10 @@ class App:
 
     cancel_btn = tk.Button(frame, text='取消', padx=5, command=self.cancel_crop)
     cancel_btn.pack(side=tk.LEFT, padx=5)
- 
+
     frame.update_idletasks()
     frame_width = frame.winfo_reqwidth()
-    self.buttons_frame_id = self.psd_preview.create_window(x - frame_width - 8, y + 8, anchor=tk.NW, window=frame)
+    self.buttons_frame_id = self.psd_preview.create_window(*self.adjust_coords(x - frame_width - 8, y + 8), anchor=tk.NW, window=frame)
 
   def ok_crop(self):
     if not self.rect_id:
