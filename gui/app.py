@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import Tk, Frame, LEFT, RIGHT, BOTH, X, Y, Label, Button, filedialog, ttk, messagebox
 from PIL import Image, ImageTk, ImageDraw
 from psd_tools import PSDImage
+import threading
 
 class App:
   def __init__(self, root: Tk):
@@ -21,6 +22,17 @@ class App:
     control_frame.pack(fill=X)
     open_button = Button(control_frame, text='导入PSD', command=self.load_psd)
     open_button.pack(side=LEFT, padx=5, pady=5)
+    
+    split_button = Button(control_frame, text='切割图片', command=self.split_layer)
+    split_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+  # 切割图层
+  def split_layer(self):
+    self.psd.save('example.png')
+    for layer in self.psd:
+      image = layer.composite()
+      print(layer.name)
+      # image.save('testimg' + '/' + layer.name + '.png')
 
   # 左边设计稿展示
   def frame_left(self, main):
@@ -155,20 +167,29 @@ class App:
     frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
   def load_psd(self):
-    file_path = filedialog.askopenfilename(
+
+
+    def on_finish():
+      print('读取成功!')
+    
+    def task():
+      file_path = filedialog.askopenfilename(
       title='选择psd文件',
       filetypes=[("PSD 文件", "*.psd *.psb")]
     )
-
-    if file_path:
-      self.psd = PSDImage.open(file_path)
-      full_image = self.psd.composite()
-      # full_image.thumbnail((600, 600))
-      self.pil_image['full'] = full_image
-      tk_image = ImageTk.PhotoImage(full_image)
-      self.psd_preview.create_image(0,0, anchor=tk.NW, image=tk_image)
-      self.psd_preview.config(scrollregion=self.psd_preview.bbox('all'))
-      self.image_cache['full'] = tk_image  # 必须缓存
+      if file_path:
+        self.psd = PSDImage.open(file_path)
+        full_image = self.psd.composite()
+        # full_image.thumbnail((600, 600))
+        self.pil_image['full'] = full_image
+        tk_image = ImageTk.PhotoImage(full_image)
+        self.psd_preview.create_image(0,0, anchor=tk.NW, image=tk_image)
+        self.psd_preview.config(scrollregion=self.psd_preview.bbox('all'))
+        self.image_cache['full'] = tk_image  # 必须缓存
+        self.root.after(0, lambda: on_finish)
+      
+      threading.Thread(target=task, deamon=True).start()
+      
 
 
 

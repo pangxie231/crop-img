@@ -63,16 +63,25 @@ from functools import cmp_to_key
 
 # root.mainloop()
 
-x = [2,3,5,4,1]
-# 先判断x > y
-# -1 1, 按照一个坐标轴，-1在左侧，1在右侧
-def compare(x,y):
-  if x > y:
-    return -1
-  if x < y:
-    return 1
-  else:
-    return 0
+# x = [2,3,5,4,1]
+# # 先判断x > y
+# # -1 1, 按照一个坐标轴，-1在左侧，1在右侧
+# def compare(x,y):
+#   if x > y:
+#     return -1
+#   if x < y:
+#     return 1
+#   else:
+#     return 0
   
-x.sort(key=cmp_to_key(compare))
-print(x)
+# x.sort(key=cmp_to_key(compare))
+# print(x)
+
+# 字符串格式化
+input_name = input('请输入你的姓名:')
+input_age = input('请输入你的年龄:')
+print('Hello %s! You are %s! %%' % (input_name, input_age))
+
+
+# 字典
+d = dict(age=25, name='lwj')
