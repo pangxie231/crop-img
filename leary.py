@@ -78,10 +78,59 @@ from functools import cmp_to_key
 # print(x)
 
 # 字符串格式化
-input_name = input('请输入你的姓名:')
-input_age = input('请输入你的年龄:')
-print('Hello %s! You are %s! %%' % (input_name, input_age))
+# input_name = input('请输入你的姓名:')
+# input_age = input('请输入你的年龄:')
+# print('Hello %s! You are %s! %%' % (input_name, input_age))
 
 
 # 字典
-d = dict(age=25, name='lwj')
+# d = dict(age=25, name='lwj')
+
+
+# if else 三目
+# b = False
+# print(b if 'True' else 'False')
+
+
+# 循环
+# x = 1
+# while x <= 100:
+#   print(x)
+#   x +=1
+
+# words = ['this', 'is', 'an', 'ex', 'parrot']
+# for word in words:
+#   print(word)
+  
+# numbers = [0,1,2,3,4,5,6,7,8,9,10]
+# for number in numbers:
+#   print(number)
+
+# for n in range(1,10):
+#   print(n)
+
+# d = { 'x': 1, 'y': 2, 'z': 3 }
+# for key in d:
+#   # print(key)
+#   print(d.get(key))
+
+# fibs = [0,1]
+# for i in range(10):
+#   fibs.append(fibs[-2] + fibs[-1])
+# print(fibs)
+
+# def hello(name):
+#   return 'Hello' + ',' + name + '!'
+
+# print(hello('lwj'))
+
+def fibs(num):
+  '计算fib'
+  my_list = [0, 1]
+  i = 0
+  while i < num - 2:
+    my_list.append(my_list[-2] + my_list[-1])
+    i += 1
+  return my_list
+
+print(help(fibs))
