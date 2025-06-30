@@ -3,13 +3,23 @@ from tkinter import Tk, Frame, LEFT, RIGHT, BOTH, X, Y, Label, Button, filedialo
 from PIL import Image, ImageTk, ImageDraw
 from psd_tools import PSDImage
 import threading
+from typing import Dict, List
+from utils.matcher import get_match_degree, crop_transparent_edges
 
 class App:
   def __init__(self, root: Tk):
     self.root = root
 
+    # tk_image
     self.image_cache = {}
+    # pil_image
     self.pil_image = {}
+    # 预览器的pil_image
+    self.preview_pil_image: Dict[str, Image.Image] = {}
+    # 裁剪区的image
+    self.crop_image: Dict[str, ImageTk.PhotoImage] = {}
+    
+    self.psd: PSDImage = None
     
     main_frame = Frame(root, width=800, height=600)
     main_frame.pack(fill=BOTH, expand=True)
@@ -25,6 +35,9 @@ class App:
     
     split_button = Button(control_frame, text='切割图片', command=self.split_layer)
     split_button.pack(side=tk.LEFT, padx=5, pady=5)
+    
+    matcher_button = Button(control_frame, text='匹配', command=self.matcher_preview)
+    matcher_button.pack(side=tk.LEFT, padx=5, pady=5)
 
   # 切割图层
   def split_layer(self):
@@ -134,9 +147,12 @@ class App:
     x1, y1, x2, y2 = map(int, self.psd_preview.coords(self.rect_id))
 
     cropped_img = self.pil_image['full'].crop((x1, y1, x2, y2))
+    self.preview_pil_image[self.rect_id] = cropped_img
     tk_img = ImageTk.PhotoImage(cropped_img)
     self.image_cache[self.rect_id] = tk_img
     tk.Label(self.previews_frame, image=tk_img).pack(side=tk.LEFT)
+    
+    self.cancel_crop()
     
     
   
@@ -164,15 +180,52 @@ class App:
   # 右下
   def frame_rb(self, parent):
     frame = tk.Frame(parent, bg='skyblue')
+    self.crop_frame = frame
     frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+    
+  
+  # 匹配函数
+  def matcher_preview(self):
+    # 把pil_image的图片和大图中的图层进行比较
+    mathers: List[Image.Image] = []
+
+    for preview_key in self.preview_pil_image:
+      # 获取预览区图片
+      preview_image = self.preview_pil_image[preview_key]
+      
+      max_num: float = 0
+      max_image: Image.Image = None
+      for layer in self.psd:
+        image = crop_transparent_edges(layer.composite())
+        match_num = get_match_degree(preview_image, image)
+
+        # mathers.append(image)
+        if match_num > max_num:
+          max_num = match_num
+          max_image = image
+        
+      mathers.append(max_image)
+  
+    self.render_crop_images(mathers)
+  
+  # 获取psd所有图层，过滤掉不展示的
+  # def psd_layers(self, layer: PSDImage):
+    
+    
+  def render_crop_images(self, images: List[Image.Image]):
+    for i, img in enumerate(images):
+      tk_image = ImageTk.PhotoImage(img)
+      self.image_cache['crop' + str(i)] = tk_image
+
+      label = tk.Label(self.crop_frame, image=tk_image)
+      label.pack(side=tk.LEFT)
 
   def load_psd(self):
-
-
     def on_finish():
       print('读取成功!')
     
     def task():
+      print('task is call')
       file_path = filedialog.askopenfilename(
       title='选择psd文件',
       filetypes=[("PSD 文件", "*.psd *.psb")]
@@ -188,7 +241,10 @@ class App:
         self.image_cache['full'] = tk_image  # 必须缓存
         self.root.after(0, lambda: on_finish)
       
-      threading.Thread(target=task, deamon=True).start()
+    print('load_psd is call')
+    t1 = threading.Thread(target=task, name='load_psd')
+    t1.start()
+    # t1.join()
       
 
 
