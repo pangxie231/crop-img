@@ -1,5 +1,6 @@
 import tkinter as tk
 from functools import cmp_to_key
+from typing import Dict
 
 # def main():
 #   root = tk.Tk()
@@ -124,13 +125,44 @@ from functools import cmp_to_key
 
 # print(hello('lwj'))
 
-def fibs(num):
-  '计算fib'
-  my_list = [0, 1]
-  i = 0
-  while i < num - 2:
-    my_list.append(my_list[-2] + my_list[-1])
-    i += 1
-  return my_list
+# def fibs(num):
+#   '计算fib'
+#   my_list = [0, 1]
+#   i = 0
+#   while i < num - 2:
+#     my_list.append(my_list[-2] + my_list[-1])
+#     i += 1
+#   return my_list
 
-print(help(fibs))
+# print(help(fibs))
+
+# def hello_1(gretting='hello', name='world'):
+#   print('%s, %s!' % (gretting, name))
+
+# hello_1(gretting='Hello', name='JG')
+# hello_1(name='JG')
+
+# def print_params(*params):
+#   print(params)
+
+# print_params()
+
+# def print_params2(title, **params):
+#   print(title)
+#   print(params)
+
+# print_params2('title', other="jg", name="dg")
+
+# def add(x,y):
+#   return x + y
+# params = (1,2)
+# print(add(*params))
+
+def add(**d: Dict[str, int]):
+  sum = 0
+  for v in d.values():
+    sum += v
+  return sum
+my_d = {'x': 1, 'y': 2, 'z': 3}
+print(add(**my_d))
+    
