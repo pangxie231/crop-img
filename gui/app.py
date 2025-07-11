@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import Tk, Frame, LEFT, RIGHT, BOTH, X, Y, Label, Button, filedialog, ttk, messagebox
 from PIL import Image, ImageTk, ImageDraw
 from psd_tools import PSDImage
+from psd_tools.api.layers import Layer
+import os
+
 import threading
 from typing import Dict, List
 from utils.matcher import get_match_degree, crop_transparent_edges
@@ -185,32 +188,55 @@ class App:
     
   
   # 匹配函数
+  # 将预览区的图片，和psd中的每一个图层匹配
+  # 过滤掉不展示的，并且需要递归
+  # fn 递归获取所有的layers，
+  # fn 接收图片和layers，返回匹配的图片元组
   def matcher_preview(self):
     # 把pil_image的图片和大图中的图层进行比较
     mathers: List[Image.Image] = []
+    # 所有层级
+    it_all_layers = self.psd.descendants()
 
-    for preview_key in self.preview_pil_image:
-      # 获取预览区图片
-      preview_image = self.preview_pil_image[preview_key]
-      
-      max_num: float = 0
-      max_image: Image.Image = None
-      for layer in self.psd:
-        image = crop_transparent_edges(layer.composite())
-        match_num = get_match_degree(preview_image, image)
-
-        # mathers.append(image)
-        if match_num > max_num:
-          max_num = match_num
-          max_image = image
+    def task():
+      for preview_key in self.preview_pil_image:
+        # 获取预览区图片
+        preview_image = self.preview_pil_image[preview_key]
         
-      mathers.append(max_image)
+        max_num: float = 0
+        max_image: Image.Image = None
+        for layer in it_all_layers:
+          if not layer.visible:
+            continue
+          image_show = layer.composite()
+          try:
+            save_dir = '../imgs'
+            os.makedirs(save_dir, exist_ok=True)
+            save_path = os.path.join(save_dir, layer.name + '.png')
+            image_show.save(save_path)
+          except:
+            print('异常', layer.name)
+
+          # image = crop_transparent_edges(layer.composite())
+          # match_num = get_match_degree(preview_image, image)
+          # print(match_num)
+
+          # mathers.append(image)
+        #   if match_num > max_num:
+        #     max_num = match_num
+        #     max_image = image
+          
+        # mathers.append(max_image)
+      # self.render_crop_images(mathers)
+      
+    t1 = threading.Thread(target=task, name='match_imgs')
+    t1.start()
   
-    self.render_crop_images(mathers)
-  
-  # 获取psd所有图层，过滤掉不展示的
-  # def psd_layers(self, layer: PSDImage):
-    
+  # 递归获取所有layers
+  def psd_layers(self, psdImage: PSDImage):
+    for layer in psdImage.descendants():
+      print('layer',layer)
+    # # return layers
     
   def render_crop_images(self, images: List[Image.Image]):
     for i, img in enumerate(images):

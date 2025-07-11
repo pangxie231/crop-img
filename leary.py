@@ -158,11 +158,30 @@ from typing import Dict
 # params = (1,2)
 # print(add(*params))
 
-def add(**d: Dict[str, int]):
-  sum = 0
-  for v in d.values():
-    sum += v
-  return sum
-my_d = {'x': 1, 'y': 2, 'z': 3}
-print(add(**my_d))
+# def add(**d: Dict[str, int]):
+#   sum = 0
+#   for v in d.values():
+#     sum += v
+#   return sum
+# my_d = {'x': 1, 'y': 2, 'z': 3}
+# print(add(**my_d))
     
+# 改变全局变量
+# x = 1
+# def change_global():
+#   global x
+#   x = x + 1
+
+# change_global()
+# print(x)
+  
+# 递归
+# def recursion():
+#   return recursion()
+# recursion()
+
+def factorial(n):
+  if n == 1: return 1
+  return n * factorial(n - 1)
+
+print(factorial(10))
